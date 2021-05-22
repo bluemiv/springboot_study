@@ -171,4 +171,8 @@ public class ApiNoticeController {
         return new ResponseEntity<>(exception.getMessage(), HttpStatus.OK);
     }
 
+    @ExceptionHandler(DuplicateNoticeException.class)
+    public ResponseEntity<String> handlerDuplicateNoticeException(DuplicateNoticeException exception) {
+        return new ResponseEntity<>(exception.getMessage(), HttpStatus.BAD_REQUEST);
+    }
 }
