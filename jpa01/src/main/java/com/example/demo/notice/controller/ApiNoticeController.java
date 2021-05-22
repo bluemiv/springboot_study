@@ -4,6 +4,7 @@ import com.example.demo.notice.entity.Notice;
 import com.example.demo.notice.exception.AlreadyDeletedException;
 import com.example.demo.notice.exception.DuplicateNoticeException;
 import com.example.demo.notice.exception.NoticeNotFoundException;
+import com.example.demo.notice.model.ErrorResponse;
 import com.example.demo.notice.model.NoticeDeleteRequest;
 import com.example.demo.notice.model.NoticeRequest;
 import com.example.demo.notice.repository.NoticeRepository;
@@ -14,10 +15,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -49,7 +52,21 @@ public class ApiNoticeController {
     }
 
     @PostMapping({"", "/"})
-    public ResponseEntity<Notice> addNotice(@RequestBody @Valid NoticeRequest noticeRequest) {
+    public ResponseEntity<Object> addNotice(
+            @RequestBody @Valid NoticeRequest noticeRequest,
+            Errors errors) {
+
+        // body 데이터에 오류가 있는 경우, field 랑 message 반환
+        if (errors.hasErrors()) {
+            List<ErrorResponse> errorResponses = new ArrayList<>();
+
+            errors.getAllErrors().forEach(error -> {
+                errorResponses.add(ErrorResponse.of(error));
+            });
+
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponses);
+        }
+
         String title = noticeRequest.getTitle();
         String contents = noticeRequest.getContents();
 
