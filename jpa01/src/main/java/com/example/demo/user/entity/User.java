@@ -34,6 +34,8 @@ public class User {
     private String phone; // 전화번호
 
     @Column
-    private LocalDateTime registeredAt; // 등록입 (가입일)
+    private LocalDateTime registeredAt; // 등록일 (가입일)
 
+    @Column
+    private LocalDateTime updatedAt; // 수정일
 }

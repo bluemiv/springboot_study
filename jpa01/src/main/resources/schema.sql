@@ -24,5 +24,6 @@ create table user
     email         varchar(255),
     phone         varchar(255),
     registered_at timestamp,
+    updated_at    timestamp,
     primary key (id)
 );
