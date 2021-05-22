@@ -8,12 +8,11 @@ spring:
     url: jdbc:h2:mem:testdb
     driver-class-name: org.h2.Driver
     username: root
-    password: '1234'
+    password: 1234
 
   jpa:
     hibernate:
       ddl-auto: none
-    show-sql: true
     generate-ddl: false
     properties:
       format_sql: true
