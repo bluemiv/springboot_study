@@ -4,6 +4,7 @@ import com.example.demo.notice.model.ErrorResponse;
 import com.example.demo.user.entity.User;
 import com.example.demo.user.exception.UserNotFoundException;
 import com.example.demo.user.model.UserRequest;
+import com.example.demo.user.model.UserResponse;
 import com.example.demo.user.model.UserUpdateRequest;
 import com.example.demo.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +34,15 @@ public class ApiUserController {
             errorResponses.add(ErrorResponse.of(error));
         });
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponses);
+    }
+
+    @GetMapping("{id}")
+    public ResponseEntity<?> getUser(@PathVariable("id") long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("해당 사용자는 존재하지 않습니다. id: " + id));
+
+        // 비밀번호, 가입일과 같이 민감 정보는 숨기기 위해, 따로 UserResponse 를 생성하여 반환
+        return ResponseEntity.status(HttpStatus.OK).body(UserResponse.of(user));
     }
 
     @PostMapping({"", "/"})
