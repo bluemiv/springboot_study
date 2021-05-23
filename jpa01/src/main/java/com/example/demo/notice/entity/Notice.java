@@ -1,5 +1,6 @@
 package com.example.demo.notice.entity;
 
+import com.example.demo.user.entity.User;
 import lombok.*;
 import lombok.experimental.Accessors;
 
@@ -44,4 +45,8 @@ public class Notice {
 
     @Column
     private LocalDateTime deletedAt; // 삭제 날짜
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn
+    private User user; // 글을 작성한 사용자
 }

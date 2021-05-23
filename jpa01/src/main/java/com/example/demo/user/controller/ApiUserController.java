@@ -1,6 +1,8 @@
 package com.example.demo.user.controller;
 
 import com.example.demo.notice.model.ErrorResponse;
+import com.example.demo.notice.model.NoticeResponse;
+import com.example.demo.notice.repository.NoticeRepository;
 import com.example.demo.user.entity.User;
 import com.example.demo.user.exception.UserNotFoundException;
 import com.example.demo.user.model.UserRequest;
@@ -18,6 +20,7 @@ import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -26,6 +29,7 @@ import java.util.List;
 public class ApiUserController {
 
     private final UserRepository userRepository;
+    private final NoticeRepository noticeRepository;
 
     private ResponseEntity<List<ErrorResponse>> getErrorResponseEntity(Errors errors) {
         // error 정보 response 로 반환
@@ -36,7 +40,7 @@ public class ApiUserController {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponses);
     }
 
-    @GetMapping("{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<?> getUser(@PathVariable("id") long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("해당 사용자는 존재하지 않습니다. id: " + id));
@@ -83,6 +87,19 @@ public class ApiUserController {
                 .setUpdatedAt(LocalDateTime.now());
 
         return ResponseEntity.status(HttpStatus.OK).body(userRepository.save(user));
+    }
+
+    @GetMapping("/{id}/notice")
+    public ResponseEntity<?> userNotice(@PathVariable("id") long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("해당 사용자는 존재하지 않습니다. id: " + id));
+
+        List<NoticeResponse> noticeResponseList =
+                noticeRepository.findByUser(user)
+                        .stream().map(notice -> NoticeResponse.of(notice))
+                        .collect(Collectors.toList());
+
+        return ResponseEntity.status(HttpStatus.OK).body(noticeResponseList);
     }
 
     @ExceptionHandler(UserNotFoundException.class)
