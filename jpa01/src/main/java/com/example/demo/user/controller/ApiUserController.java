@@ -4,6 +4,7 @@ import com.example.demo.notice.model.ErrorResponse;
 import com.example.demo.notice.model.NoticeResponse;
 import com.example.demo.notice.repository.NoticeRepository;
 import com.example.demo.user.entity.User;
+import com.example.demo.user.exception.ExistsEmailException;
 import com.example.demo.user.exception.UserNotFoundException;
 import com.example.demo.user.model.UserRequest;
 import com.example.demo.user.model.UserResponse;
@@ -57,6 +58,12 @@ public class ApiUserController {
             return getErrorResponseEntity(errors);
         }
 
+        // email 중복 체크
+        int existsUserCount = userRepository.countByEmail(userRequest.getEmail());
+        if (existsUserCount > 0) {
+            throw new ExistsEmailException("이미 가입된 이메일이 존재합니다. email: " + userRequest.getEmail());
+        }
+
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(userRepository.save(
                         User.builder()
@@ -104,6 +111,11 @@ public class ApiUserController {
 
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<String> handlerUserNotFoundException(UserNotFoundException exception) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
+    }
+
+    @ExceptionHandler(ExistsEmailException.class)
+    public ResponseEntity<String> handlerExistsEmailException(ExistsEmailException exception) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
     }
 }
