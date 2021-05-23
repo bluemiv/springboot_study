@@ -5,7 +5,9 @@ import com.example.demo.notice.model.NoticeResponse;
 import com.example.demo.notice.repository.NoticeRepository;
 import com.example.demo.user.entity.User;
 import com.example.demo.user.exception.ExistsEmailException;
+import com.example.demo.user.exception.PasswordNotMatchException;
 import com.example.demo.user.exception.UserNotFoundException;
+import com.example.demo.user.model.UserPasswordUpdateRequest;
 import com.example.demo.user.model.UserRequest;
 import com.example.demo.user.model.UserResponse;
 import com.example.demo.user.model.UserUpdateRequest;
@@ -109,6 +111,31 @@ public class ApiUserController {
         return ResponseEntity.status(HttpStatus.OK).body(noticeResponseList);
     }
 
+    @PatchMapping("/{id}/password")
+    public ResponseEntity<?> updateUserPassword(
+            @PathVariable("id") long id,
+            @RequestBody UserPasswordUpdateRequest userPasswordUpdateRequest,
+            Errors errors) {
+
+        // 값 체크
+        if (errors.hasErrors()) {
+            return getErrorResponseEntity(errors);
+        }
+
+        // id 와 password 로 사용자 정보를 찾음
+        User user = userRepository.findByIdAndPassword(id, userPasswordUpdateRequest.getPassword())
+                .orElseThrow(() -> new PasswordNotMatchException("잘못된 비밀번호 또는 사용자 정보 입니다. id: " + id));
+
+        // 새로운 비밀번호로 갱신
+        user.setPassword(userPasswordUpdateRequest.getNewPassword());
+
+        // DB 갱신
+        userRepository.save(user);
+
+        return ResponseEntity.ok().build();
+    }
+
+
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<String> handlerUserNotFoundException(UserNotFoundException exception) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
@@ -116,6 +143,11 @@ public class ApiUserController {
 
     @ExceptionHandler(ExistsEmailException.class)
     public ResponseEntity<String> handlerExistsEmailException(ExistsEmailException exception) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
+    }
+
+    @ExceptionHandler(PasswordNotMatchException.class)
+    public ResponseEntity<String> handlerPasswordNotMatchException(PasswordNotMatchException exception) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(exception.getMessage());
     }
 }
